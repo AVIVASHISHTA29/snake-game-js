@@ -1,36 +1,33 @@
-// The snake is an array of objects where each object is a position in the grid.
+console.log("Let The Game Begin!");
+
 let snake = [{ top: 200, left: 200 }];
-let direction = { key: "ArrowRight", dx: 10, dy: 0 }; // previously dx: 20, dy: 0
-
-// similarly update the other parts of the code that depend on the grid size
-
+let direction = { key: "ArrowRight", dx: 20, dy: 0 };
 let food = null;
 let score = 0;
 let highScore = 0;
-
-// Update the direction based on the user's input.
+let speed = 100;
 window.addEventListener("keydown", (e) => {
   const newDirection = getDirection(e.key);
+  console.log("Key I have Pressed", e.key);
   const allowedChange = Math.abs(direction.dx) !== Math.abs(newDirection.dx);
   if (allowedChange) direction = newDirection;
 });
 
 function getDirection(key) {
   switch (key) {
-    case "ArrowUp":
+    case "ArrowUp" || "w":
       return { key, dx: 0, dy: -20 };
-    case "ArrowDown":
+    case "ArrowDown" || "s":
       return { key, dx: 0, dy: 20 };
-    case "ArrowLeft":
+    case "ArrowLeft" || "a":
       return { key, dx: -20, dy: 0 };
-    case "ArrowRight":
+    case "ArrowRight" || "d":
       return { key, dx: 20, dy: 0 };
     default:
       return direction;
   }
 }
 
-// Moves the snake by updating the position of the head and removing the last segment.
 function moveSnake() {
   const head = Object.assign({}, snake[0]); // copy head
   head.top += direction.dy;
@@ -45,7 +42,6 @@ function moveSnake() {
   if (!eatFood()) snake.pop(); // if the snake doesn't eat food, remove the tail
 }
 
-// Generates a random position for the food.
 function randomFood() {
   food = {
     top: Math.floor(Math.random() * 20) * 20,
@@ -53,7 +49,6 @@ function randomFood() {
   };
 }
 
-// If the snake's head is at the same position as the food, it eats the food.
 function eatFood() {
   if (snake[0].top === food.top && snake[0].left === food.left) {
     food = null;
@@ -62,13 +57,6 @@ function eatFood() {
   return false;
 }
 
-// Update the score on the screen.
-function updateScore() {
-  document.getElementById("score").innerText = "Score: " + score;
-  document.getElementById("high-score").innerText = "High Score: " + highScore;
-}
-
-// If the snake intersects itself, the game is over.
 function gameOver() {
   for (let i = 1; i < snake.length; i++) {
     if (snake[i].top === snake[0].top && snake[i].left === snake[0].left)
@@ -77,15 +65,24 @@ function gameOver() {
   return false;
 }
 
-// Game loop
+function updateScore() {
+  document.getElementById("score").innerText = "Score: " + score;
+  document.getElementById("high-score").innerText = "High Score: " + highScore;
+}
+
 function gameLoop() {
   if (gameOver()) {
+    alert("Game over!");
+    // Resetting Everything
     if (score > highScore) {
       highScore = score;
     }
     score = 0;
+    speed = 100;
     snake = [{ top: 200, left: 200 }];
     direction = { key: "ArrowRight", dx: 20, dy: 0 };
+    food = null;
+    randomFood();
   }
 
   setTimeout(() => {
@@ -93,8 +90,9 @@ function gameLoop() {
     moveSnake();
     if (!food) {
       randomFood();
-      score += 1;
-    } // ensure food is created
+      score += 2;
+      speed = speed - 2;
+    }
     if (eatFood()) {
       document.getElementById("score").innerHTML = `Score :${score}`;
     }
@@ -102,25 +100,25 @@ function gameLoop() {
     drawSnake();
     drawFood();
     gameLoop();
-  }, 100);
+  }, speed);
 }
 
-randomFood(); // call this to generate food before the game starts
+drawSnake();
+randomFood();
 gameLoop();
 
-// Draw the snake on the screen.
 function drawSnake() {
-  snake.forEach((part, index) => {
+  snake.forEach((item, index) => {
     const snakeElement = document.createElement("div");
-    snakeElement.style.top = `${part.top}px`;
-    snakeElement.style.left = `${part.left}px`;
+    snakeElement.style.top = `${item.top}px`;
+    snakeElement.style.left = `${item.left}px`;
     snakeElement.classList.add("snake");
     if (index === 0) snakeElement.classList.add("head");
+    if (index === snake.length - 1) snakeElement.classList.add("head");
     document.getElementById("game-board").appendChild(snakeElement);
   });
 }
 
-// Draw the food on the screen.
 function drawFood() {
   const foodElement = document.createElement("div");
   foodElement.style.top = `${food.top}px`;
